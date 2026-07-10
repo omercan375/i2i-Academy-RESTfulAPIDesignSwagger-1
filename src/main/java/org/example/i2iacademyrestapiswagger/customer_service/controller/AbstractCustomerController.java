@@ -17,4 +17,5 @@ public interface AbstractCustomerController {
     public ResponseEntity<?> findCustomerById(@RequestParam @NotNull @Valid String  id);
     public ResponseEntity<?> findAllCustomers();
     public ResponseEntity<?> updateEmail(@Valid @RequestBody UpdateEmailDto updateEmailDto);
+    public ResponseEntity<?> deleteCustomer(@RequestParam @NotNull @Valid String id);
 }

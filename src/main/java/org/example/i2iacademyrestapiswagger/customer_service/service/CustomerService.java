@@ -2,6 +2,9 @@ package org.example.i2iacademyrestapiswagger.customer_service.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.i2iacademyrestapiswagger.customer_service.dto.UpdateEmailDto;
+import org.example.i2iacademyrestapiswagger.customer_service.exception.CustomerAlreadyExistsException;
+import org.example.i2iacademyrestapiswagger.customer_service.exception.CustomerNotFoundException;
+import org.example.i2iacademyrestapiswagger.customer_service.exception.EmailAlreadyExistsException;
 import org.example.i2iacademyrestapiswagger.customer_service.repositories.CustomerRepo;
 import org.example.i2iacademyrestapiswagger.customer_service.entity.CustomerTable;
 
@@ -29,7 +32,7 @@ public class CustomerService implements AbstractCustomerService {
         // customer daha önceden varmı yokmu kontrolü email ile yapılıyor unıqe olduğu için
         CustomerTable customerExistControl = customerRepo.findByEmail(createCustomerDto.getEmail());
         if (customerExistControl != null) {
-            throw new RuntimeException("CUSTOMER ALREADY EXISTS");
+            throw new CustomerAlreadyExistsException("Customer already exists");
         }
         // password hash
         String hashed = passwordEncoder.encode(createCustomerDto.getPassword());
@@ -61,7 +64,7 @@ public class CustomerService implements AbstractCustomerService {
         // find customer by id
         CustomerTable findCustomer = customerRepo.findCustomerById(customerId);
         if (findCustomer == null) {
-            throw new RuntimeException("CUSTOMER NOT FOUND");
+            throw new CustomerNotFoundException("Customer not found");
         }
         return findCustomer(findCustomer);
     }
@@ -83,21 +86,26 @@ public class CustomerService implements AbstractCustomerService {
         // new email exists controller
         CustomerTable customerExistControl = customerRepo.findByEmail(updateEmailDto.getEmail());
         if (customerExistControl != null) {
-            throw new RuntimeException("EMAIL ALREADY EXISTS");
+            throw new EmailAlreadyExistsException("Email already exists");
         }
         // update email
-        int updateEmail = customerRepo.updateEmail(updateEmailDto.getEmail(),updateEmailDto.getCustomerId());
+        int updateEmail = customerRepo.updateEmail(updateEmailDto.getEmail(), updateEmailDto.getCustomerId());
         if (updateEmail == 0) {
-            throw new RuntimeException("EMAIL CANT UPDATED");
+            throw new CustomerNotFoundException("Customer not found");
         }
     }
 
     @Override
     @Transactional
     public void deleteCustomer(String customerId) {
+        // find customer
+        CustomerTable customerExistControl = customerRepo.findCustomerById(customerId);
+        if (customerExistControl == null) {
+            throw new CustomerNotFoundException("Customer not found");
+        }
+
         customerRepo.deleteCustomerById(customerId);
     }
-
 
 
 }
